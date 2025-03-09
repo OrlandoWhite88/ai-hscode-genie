@@ -1,6 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,11 +17,11 @@ const Layout = ({ children, className }: LayoutProps) => {
             <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
               <div className="h-5 w-5 rounded-md bg-primary animate-pulse-light"></div>
             </div>
-            <h1 className="text-xl font-medium tracking-tight">HSCode Genie</h1>
+            <h1 className="text-xl font-medium tracking-tight">Uni HS Classification</h1>
           </div>
-          <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center">
-            <span className="text-xs font-medium">AI</span>
-          </div>
+          <Link to="/settings" className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors">
+            <span className="text-xs font-medium">Uni AI</span>
+          </Link>
         </div>
       </header>
       

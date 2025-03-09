@@ -38,7 +38,7 @@ const Index = () => {
         <QuestionFlow 
           question={currentQuestion} 
           onAnswer={answerQuestion}
-          isLoading={state === "analyzing"} 
+          isLoading={false} 
         />
       )}
       
