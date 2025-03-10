@@ -8,12 +8,18 @@ import argparse
 import re
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
+from pathlib import Path
 
 # OpenAI API (only needed for classification)
 try:
     import openai
+    from dotenv import load_dotenv
 except ImportError:
     openai = None
+
+# Load environment variables from .env file
+env_path = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+load_dotenv(dotenv_path=env_path / '.env')
 
 # Set up logging
 logging.basicConfig(
