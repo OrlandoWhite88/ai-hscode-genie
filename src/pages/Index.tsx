@@ -21,7 +21,7 @@ const Index = () => {
       {state === "idle" && (
         <ProductInput 
           onSubmit={startAnalysis} 
-          isLoading={false} 
+          isLoading={state === "analyzing"} 
         />
       )}
       
@@ -37,8 +37,8 @@ const Index = () => {
       {state === "questioning" && currentQuestion && (
         <QuestionFlow 
           question={currentQuestion} 
-          onAnswer={answerQuestion}
-          isLoading={false} 
+          onAnswer={(questionId, answer) => answerQuestion(questionId, answer)}
+          isLoading={state === "analyzing"} 
         />
       )}
       
