@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { hsClassifier, ClassifierResult } from "./hsClassifier";
 
 // Types
 export type GeneratorState = "idle" | "analyzing" | "questioning" | "generating" | "complete";
@@ -17,10 +16,51 @@ export interface Question {
   options?: string[];
 }
 
+// Mock data for demonstration purposes
+const MOCK_QUESTIONS: Question[] = [
+  {
+    id: "material",
+    text: "What is the primary material of the product?",
+    options: ["Cotton", "Polyester", "Leather", "Metal", "Plastic", "Other"]
+  },
+  {
+    id: "purpose",
+    text: "What is the main purpose or use of this product?",
+    options: ["Clothing", "Industrial", "Electronic", "Medical", "Food", "Other"]
+  },
+  {
+    id: "processing",
+    text: "Has the product undergone any specific processing or treatment?",
+  },
+  {
+    id: "components",
+    text: "Does the product contain any electronic components or batteries?",
+    options: ["Yes", "No"]
+  }
+];
+
+// Mock HS code result generation
+const generateMockHSCode = (): HSResult => {
+  // This would be replaced with actual API call
+  const codes = [
+    { code: "6204.49.10", description: "Women's dresses, of artificial fibers", confidence: 95 },
+    { code: "8517.12.00", description: "Telephones for cellular networks or other wireless networks", confidence: 88 },
+    { code: "3926.20.90", description: "Articles of apparel and clothing accessories of plastic", confidence: 76 },
+    { code: "9403.60.80", description: "Other wooden furniture", confidence: 92 },
+    { code: "8471.30.01", description: "Portable automatic data processing machines", confidence: 89 },
+  ];
+  
+  return codes[Math.floor(Math.random() * codes.length)];
+};
+
+// Simulated delay for API calls
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const useHSCodeGenerator = () => {
   const [state, setState] = useState<GeneratorState>("idle");
   const [productDescription, setProductDescription] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<HSResult | null>(null);
   
@@ -29,44 +69,11 @@ export const useHSCodeGenerator = () => {
     setState("analyzing");
     setProductDescription(description);
     
-    // Artificial delay to simulate processing
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Simulated analysis delay
+    await delay(1500);
     
-    // Check if we need more information
-    const { needsInfo, question, options } = hsClassifier.needsMoreInfo(description);
-    
-    if (needsInfo && question) {
-      setState("questioning");
-      setCurrentQuestion({
-        id: `question_${Date.now()}`,
-        text: question,
-        options
-      });
-    } else {
-      // If we have enough information, generate result
-      setState("generating");
-      
-      // Artificial delay to simulate processing
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const classification = hsClassifier.classify(description);
-      
-      if (classification) {
-        setResult({
-          code: classification.code,
-          description: classification.description,
-          confidence: classification.confidence
-        });
-        setState("complete");
-      } else {
-        // If classification failed, ask for more information
-        setState("questioning");
-        setCurrentQuestion({
-          id: `fallback_${Date.now()}`,
-          text: "I couldn't determine the HS code with the given information. Could you provide more details about your product?",
-        });
-      }
-    }
+    setState("questioning");
+    setCurrentQuestion(MOCK_QUESTIONS[0]);
   };
   
   // Handle answering a question
@@ -79,66 +86,22 @@ export const useHSCodeGenerator = () => {
       [questionId]: answer
     }));
     
-    // Process the answer
-    const { updatedDescription, classification } = hsClassifier.processAnswer(
-      currentQuestion?.text || "",
-      answer,
-      productDescription
-    );
+    // Simulated processing delay
+    await delay(1000);
     
-    // Update the product description with the new information
-    setProductDescription(updatedDescription);
-    
-    // Artificial delay to simulate processing
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (classification && classification.confidence > 70) {
-      // If we have a good classification, show the result
-      setState("generating");
-      
-      // Artificial delay to simulate processing
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setResult({
-        code: classification.code,
-        description: classification.description,
-        confidence: classification.confidence
-      });
-      setState("complete");
+    // Move to next question or generate result
+    if (questionIndex < MOCK_QUESTIONS.length - 1) {
+      setQuestionIndex(questionIndex + 1);
+      setCurrentQuestion(MOCK_QUESTIONS[questionIndex + 1]);
+      setState("questioning");
     } else {
-      // Check if we need more information
-      const { needsInfo, question, options } = hsClassifier.needsMoreInfo(updatedDescription);
+      // Final question answered, generate result
+      setState("generating");
+      await delay(2000);
       
-      if (needsInfo && question) {
-        setState("questioning");
-        setCurrentQuestion({
-          id: `question_${Date.now()}`,
-          text: question,
-          options
-        });
-      } else {
-        // If we have enough information but no good classification, make a best guess
-        setState("generating");
-        
-        // Artificial delay to simulate final processing
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        if (classification) {
-          setResult({
-            code: classification.code,
-            description: classification.description,
-            confidence: classification.confidence
-          });
-        } else {
-          // Fallback to a default result if nothing else works
-          setResult({
-            code: "0000.00.00",
-            description: "Unable to classify with the given information",
-            confidence: 50
-          });
-        }
-        setState("complete");
-      }
+      const hsResult = generateMockHSCode();
+      setResult(hsResult);
+      setState("complete");
     }
   };
   
@@ -147,6 +110,7 @@ export const useHSCodeGenerator = () => {
     setState("idle");
     setProductDescription("");
     setCurrentQuestion(null);
+    setQuestionIndex(0);
     setAnswers({});
     setResult(null);
   };
